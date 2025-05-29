@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Overlay Chat Biason - Live Biason</title>
+    <title>Overlay Chat Biason - Live Mock</title>
     <style>
         body {
             margin: 0;
@@ -124,10 +124,6 @@
     </div>
 
     <script>
-        const clientId = '840935805679-943itvmb537h7tan0m3h7i24cj61jqv8.apps.googleusercontent.com';
-        const liveChatId = 'KicKGFVDOWxRSDk0aEJxYWNtOUZyQ2dhR1hoURILUTVneFVUeEx5dDg';
-        let accessToken = null;
-
         function openChat() {
             document.getElementById('chatBox').classList.add('open');
             document.getElementById('openButton').classList.add('hidden');
@@ -151,64 +147,77 @@
             return color;
         }
 
-        function authorize() {
-            const redirectUri = window.location.origin + window.location.pathname;
-            const scope = 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl';
-            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${encodeURIComponent(scope)}`;
+        const mockUsers = ['Ana', 'Bruno', 'Carla', 'Diego', 'Eduarda', 'Fernando'];
+        const mockMessages = [
+    'Olá, pessoal!',
+    'Muito interessante o tema!',
+    'Adorei essa explicação!',
+    'Parabéns pela live!',
+    'Estou aprendendo bastante.',
+    'Vocês são incríveis!',
+    'Onde posso baixar os materiais?',
+    'Qual o próximo tema?',
+    'Obrigado por responder minha pergunta!',
+    'Mandem um abraço pro chat!',
+    'Uau, não sabia disso!',
+    'Alguém mais está anotando tudo?',
+    'Que exemplo ótimo!',
+    'Poderiam repetir essa parte, por favor?',
+    'Essa live tá salvando minha semana!',
+    'Vocês fazem um trabalho incrível!',
+    'Tô assistindo aqui de Porto Alegre!',
+    'Quero compartilhar isso com meu time!',
+    'Show de bola!',
+    'Quando será a próxima live?',
+    'Já acompanho vocês há tempos!',
+    'Esse conteúdo deveria ser obrigatório!',
+    'Mandem um salve pro pessoal do RH!',
+    'Muito obrigado pelas dicas!',
+    'Me ajudaram a entender muita coisa hoje.',
+    'Essa parte é muito relevante!',
+    'Vou indicar vocês para meus colegas!',
+    'Tô gostando demais dessa explicação.',
+    'Essa live tá top!',
+    'Pessoal do chat, tudo bem com vocês?',
+    'Sensacional, equipe Biason!',
+    'Curtindo muito a vibe dessa live!',
+    'Essa resposta foi perfeita!',
+    'Alguém aí já aplicou isso na prática?',
+    'Tô aqui tomando meu café e assistindo!',
+    'Que tema importante!',
+    'Vocês têm algum curso sobre isso?',
+    'Adorei o design dessa apresentação!',
+    'Tem como enviar os slides depois?',
+    'Esse ponto merece destaque!',
+    'Muito grato por esse conteúdo.',
+    'Vocês sempre trazendo novidades!',
+    'Amei a explicação da Carla!',
+    'Esse assunto precisa de mais atenção!',
+    'Live maravilhosa!',
+    'Vocês podiam fazer uma série sobre isso.',
+    'Alguém sabe onde encontro mais material?',
+    'Muito bom ver profissionais tão dedicados!',
+    'Vou usar isso já amanhã no trabalho!',
+    'Chat, quem mais tá aprendendo hoje?'
+];
 
-            window.location.href = authUrl;
+        function addMockMessage() {
+            const user = mockUsers[Math.floor(Math.random() * mockUsers.length)];
+            const text = mockMessages[Math.floor(Math.random() * mockMessages.length)];
+            const timestamp = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            const msg = document.createElement('div');
+            msg.className = 'message';
+            const userColor = stringToColor(user);
+            msg.innerHTML = `<span class="user-color" style="color: ${userColor}">${user}</span><span class="timestamp">${timestamp}</span><br>${text}`;
+
+            const messagesContainer = document.getElementById("messagesContainer");
+            messagesContainer.appendChild(msg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        async function fetchMessages(pageToken = '') {
-            if (!accessToken) {
-                console.error('Access token não disponível.');
-                return;
-            }
-            try {
-                const url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${liveChatId}&part=snippet,authorDetails&pageToken=${pageToken}`;
-                const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                const data = await response.json();
-
-                if (data.items && Array.isArray(data.items)) {
-                    const messagesContainer = document.getElementById("messagesContainer");
-
-                    for (const item of data.items) {
-                        const user = item.authorDetails.displayName;
-                        const text = item.snippet.displayMessage;
-                        const timestamp = new Date(item.snippet.publishedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-                        const msg = document.createElement('div');
-                        msg.className = 'message';
-                        const userColor = stringToColor(user);
-                        msg.innerHTML = `<span class="user-color" style="color: ${userColor}">${user}</span><span class="timestamp">${timestamp}</span><br>${text}`;
-
-                        messagesContainer.appendChild(msg);
-                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    }
-                }
-
-                setTimeout(() => fetchMessages(data.nextPageToken), 10000);
-            } catch (error) {
-                console.error('Erro ao buscar mensagens do YouTube:', error);
-                setTimeout(() => fetchMessages(pageToken), 10000);
-            }
-        }
-
-        window.onload = () => {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            accessToken = params.get('access_token');
-
-            if (!accessToken) {
-                console.log('Redirecionando para autorização...');
-                authorize();
-            } else {
-                console.log('Token capturado com sucesso.');
-                fetchMessages();
-            }
-        };
+        // Começa a adicionar mensagens mock a cada 3 segundos
+        setInterval(addMockMessage, 3000);
     </script>
 </body>
 </html>
